@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(uuid())
+  username         String    @unique
+  email            String    @unique
+  password         String
+  displayName      String?
+  avatar           String?
+  publicKey        String
+  privateKeyEnc    String
+  isAdmin          Boolean   @default(false)
+  isActive         Boolean   @default(true)
+  isOnline         Boolean   @default(false)
+  lastSeen         DateTime?
+  status           String    @default("")
+  twoFactorSecret  String?
+  twoFactorEnabled Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  messages       Message[]
+  chats          ChatMember[]
+  ownedChats     Chat[]    @relation("ChatOwner")
+  devices        Device[]
+  sessions       Session[]
+  calls          CallParticipant[]
+  reactions      Reaction[]
+  voiceMessages  VoiceMessage[]
+
+  @@map("users")
+}
+
+model Chat {
+  id          String    @id @default(uuid())
+  name        String?
+  type        String    @default("DIRECT")
+  ownerId     String?
+  owner       User?     @relation("ChatOwner", fields: [ownerId], references: [id])
+  avatar      String?
+  isEncrypted Boolean   @default(true)
+  pinnedMessageId String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  members     ChatMember[]
+  messages    Message[]
+  calls       Call[]
+  voiceMessages VoiceMessage[]
+
+  @@map("chats")
+}
+
+model ChatMember {
+  id       String   @id @default(uuid())
+  chatId   String
+  chat     Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role     String   @default("MEMBER")
+  joinedAt DateTime @default(now())
+  lastRead DateTime?
+
+  @@unique([chatId, userId])
+  @@map("chat_members")
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  chatId      String
+  chat        Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  senderId    String
+  sender      User     @relation(fields: [senderId], references: [id])
+  content     String
+  contentType String   @default("TEXT")
+  fileUrl     String?
+  fileName    String?
+  fileSize    Int?
+  replyToId   String?
+  replyTo     Message? @relation("ReplyTo", fields: [replyToId], references: [id])
+  replies     Message[] @relation("ReplyTo")
+  isDeleted   Boolean  @default(false)
+  deletedForAll Boolean @default(false)
+  reactions   Reaction[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("messages")
+}
+
+model Reaction {
+  id        String   @id @default(uuid())
+  messageId String
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  emoji     String
+  createdAt DateTime @default(now())
+
+  @@unique([messageId, userId, emoji])
+  @@map("reactions")
+}
+
+model VoiceMessage {
+  id        String   @id @default(uuid())
+  chatId    String
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  fileUrl   String
+  duration  Int      // в секундах
+  waveform  String?  // JSON массив амплитуд
+  createdAt DateTime @default(now())
+
+  @@map("voice_messages")
+}
+
+model Device {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  deviceType String   @default("WEB")
+  pushToken  String?
+  publicKey  String?
+  lastActive DateTime @default(now())
+  isTrusted  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@map("devices")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("sessions")
+}
+
+model Call {
+  id          String   @id @default(uuid())
+  chatId      String
+  chat        Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  initiatedBy String
+  status      String   @default("RINGING")
+  type        String   @default("VIDEO")
+  isGroup     Boolean  @default(false)
+  startedAt   DateTime?
+  endedAt     DateTime?
+  createdAt   DateTime @default(now())
+
+  participants CallParticipant[]
+
+  @@map("calls")
+}
+
+model CallParticipant {
+  id      String @id @default(uuid())
+  callId  String
+  call    Call   @relation(fields: [callId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+  joinedAt DateTime?
+  leftAt  DateTime?
+
+  @@map("call_participants")
+}

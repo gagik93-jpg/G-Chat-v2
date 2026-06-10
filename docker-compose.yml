@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:./data/gchat.db
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
