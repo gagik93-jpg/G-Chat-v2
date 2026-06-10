@@ -1,4 +1,7 @@
-FROM node:18-alpine
+FROM node:18-slim
+
+# Install OpenSSL for Prisma
+RUN apt-get update -y && apt-get install -y openssl
 
 WORKDIR /app
 
@@ -15,7 +18,7 @@ RUN cd server && npx prisma generate
 # Copy client dist
 COPY client/dist ./client/dist/
 
-# Create uploads directory
+# Create uploads and data directories
 RUN mkdir -p uploads data
 
 # Set working directory to server
@@ -24,5 +27,5 @@ WORKDIR /app/server
 # Expose port
 EXPOSE 10000
 
-# Start server
-CMD npx prisma migrate deploy && npm start
+# Start server (skip migrate in production, just start)
+CMD npm start
