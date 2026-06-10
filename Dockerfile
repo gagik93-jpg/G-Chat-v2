@@ -2,20 +2,27 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache python3 make g++ sqlite openssl libssl3
+# Copy server files
+COPY server/package*.json ./server/
+RUN cd server && npm install
 
-COPY server/package*.json ./
-RUN npm cache clean --force
-RUN rm -rf node_modules package-lock.json
-RUN npm install --omit=dev
+COPY server/prisma ./server/prisma/
+COPY server/src ./server/src/
 
-COPY server/prisma ./prisma
-RUN npx prisma generate
+# Generate Prisma client
+RUN cd server && npx prisma generate
 
-COPY server/. .
+# Copy client dist
+COPY client/dist ./client/dist/
 
-RUN mkdir -p data uploads uploads/voice logs
+# Create uploads directory
+RUN mkdir -p uploads data
 
-EXPOSE 3000 3001
+# Set working directory to server
+WORKDIR /app/server
 
-CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
+# Expose port
+EXPOSE 10000
+
+# Start server
+CMD npx prisma migrate deploy && npm start
