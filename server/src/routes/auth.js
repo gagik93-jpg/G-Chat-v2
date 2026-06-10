@@ -4,8 +4,9 @@ const jwt = require('jsonwebtoken');
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
 const { body, validationResult } = require('express-validator');
-const { prisma } = require('../index');
+const { PrismaClient } = require('@prisma/client');
 
+const prisma = new PrismaClient();
 const router = express.Router();
 
 // Register
