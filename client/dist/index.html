@@ -46,6 +46,15 @@
     .feature p { font-size: 14px; margin: 0; color: #94a3b8; }
     .status { margin-top: 32px; padding: 16px; background: rgba(99,102,241,0.1); border-radius: 12px; border: 1px solid rgba(99,102,241,0.3); }
     .status code { color: #6366f1; font-size: 14px; }
+    .register-box {
+      margin-top: 32px;
+      padding: 24px;
+      background: rgba(99,102,241,0.1);
+      border-radius: 16px;
+      border: 1px solid rgba(99,102,241,0.3);
+    }
+    .register-box h2 { color: #6366f1; margin-bottom: 12px; }
+    .register-box p { color: #94a3b8; margin-bottom: 16px; }
   </style>
 </head>
 <body>
@@ -58,4 +67,26 @@
     </div>
     <div class="features">
       <div class="feature"><h3>🔐 E2EE</h3><p>Сквозное шифрование сообщений</p></div>
-      <div class="feature"><h3>📹 Видеозвонки</
+      <div class="feature"><h3>📹 Видеозвонки</h3><p>Групповые звонки WebRTC</p></div>
+      <div class="feature"><h3>🎙️ Голос</h3><p>Голосовые сообщения</p></div>
+      <div class="feature"><h3>👤 Админ</h3><p>Полная панель управления</p></div>
+    </div>
+    <div class="register-box">
+      <h2>🚀 Как зарегистрироваться</h2>
+      <p>Первый зарегистрированный пользователь автоматически становится администратором!</p>
+      <p><strong>API регистрации:</strong> <code>POST /api/auth/register</code></p>
+      <p>Используйте Postman или curl для регистрации:</p>
+      <code style="display:block; margin-top:12px; padding:12px; background:rgba(0,0,0,0.3); border-radius:8px; text-align:left; font-size:12px;">
+curl -X POST https://g-chat-v2-vr1e.onrender.com/api/auth/register \<br>
+  -H "Content-Type: application/json" \<br>
+  -d '{"username":"admin","email":"admin@company.com","password":"password123"}'
+      </code>
+    </div>
+    <div class="status">
+      <p>✅ <strong>Сервер работает!</strong></p>
+      <code>API: /api/health</code><br>
+      <code>WebSocket: /ws</code>
+    </div>
+  </div>
+</body>
+</html>
